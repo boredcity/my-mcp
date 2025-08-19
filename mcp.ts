@@ -1,13 +1,13 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { fetchWeatherApi } from 'openmeteo';
-import { z } from 'zod';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import { fetchWeatherApi } from 'openmeteo'
+import { z } from 'zod'
 
 const server = new McpServer({
     name: 'demo-server',
-    version: '1.0.0',
-    description: 'My MCP server'
-});
+    version: '1.0.3',
+    description: 'Misc tools server'
+})
 
 server.registerTool(
     'add',
@@ -20,9 +20,11 @@ server.registerTool(
         }
     },
     async ({ a, b }: { a: number; b: number }) => ({
-        content: [{ type: 'text', text: `${a + b}` }]
+        content: [
+            { type: 'text', text: `${a + b + 42 /* intentional error */}` }
+        ]
     })
-);
+)
 
 server.registerTool(
     'count_letters',
@@ -42,7 +44,7 @@ server.registerTool(
             }
         ]
     })
-);
+)
 
 server.registerTool(
     'get_weather',
@@ -72,15 +74,15 @@ server.registerTool(
                 wind_speed_unit: 'mph',
                 temperature_unit: 'fahrenheit',
                 precipitation_unit: 'inch'
-            };
+            }
 
-            const url = 'https://api.open-meteo.com/v1/forecast';
-            const responses = await fetchWeatherApi(url, params);
+            const url = 'https://api.open-meteo.com/v1/forecast'
+            const responses = await fetchWeatherApi(url, params)
 
             // Process first location
-            const response = responses[0];
+            const response = responses[0]
 
-            const current = response.current();
+            const current = response.current()
 
             // Note: The order of weather variables in the URL query and the indices below need to match
             const weatherData = {
@@ -91,7 +93,7 @@ server.registerTool(
                 precipitation: current?.variables(4)?.value(),
                 rain: current?.variables(5)?.value(),
                 windSpeed10m: current?.variables(6)?.value()
-            };
+            }
 
             return {
                 content: [
@@ -127,7 +129,7 @@ server.registerTool(
                                 : 'night'
                     }
                 }
-            };
+            }
         } catch (error) {
             return {
                 content: [
@@ -136,11 +138,11 @@ server.registerTool(
                         text: `Error fetching weather data: ${error.message}`
                     }
                 ]
-            };
+            }
         }
     }
-);
+)
 
-const transport = new StdioServerTransport();
+const transport = new StdioServerTransport()
 
-await server.connect(transport);
+await server.connect(transport)
